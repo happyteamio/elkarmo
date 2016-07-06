@@ -14,7 +14,7 @@ defmodule Elkarmo.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :slack],
+    [applications: [:logger, :websocket_client, :slack],
      mod: {Elkarmo, []}]
   end
 
@@ -30,7 +30,8 @@ defmodule Elkarmo.Mixfile do
   defp deps do
     [
       {:slack, "~> 0.7.0"},
-      {:websocket_client, git: "https://github.com/jeremyong/websocket_client"}
+      {:websocket_client, git: "https://github.com/jeremyong/websocket_client"},
+      {:exrm, "~> 1.0"}
     ]
   end
 end
