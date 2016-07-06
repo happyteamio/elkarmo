@@ -8,7 +8,7 @@ defmodule Elkarmo.Store do
   def set(new_karma), do: GenServer.cast __MODULE__, {:set, new_karma}
 
   def init(initial_karma) do
-    {:ok, table} = :dets.open_file(:karma, [type: :set])
+    {:ok, table} = :dets.open_file(:karma_db, [type: :set])
     karma = case :dets.lookup(table, :karma) do
       [karma: found_karma] -> found_karma
       [] -> initial_karma
@@ -26,6 +26,6 @@ defmodule Elkarmo.Store do
   end
 
   def terminate(_reason, _state) do
-    :dets.close(:karma)
+    :dets.close(:karma_db)
   end
 end
