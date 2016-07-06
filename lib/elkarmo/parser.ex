@@ -2,7 +2,7 @@ defmodule Elkarmo.Parser do
   @karma_regex ~R/<@(\w+)>:?\s*(-{2,}|\+{2,})/
 
   def parse(message, my_id) do
-    IO.puts "Parsing '#{message}' with #{my_id}"
+    # IO.puts "Parsing '#{message}' with #{my_id}"
     cond do
       message =~ ~r/^\s*<@#{my_id}>:?\s*(?:info)?\s*$/ -> {:info}
       message =~ ~r/^\s*<@#{my_id}>(?::?\s*|\s+)reset\s*$/ -> {:reset}
