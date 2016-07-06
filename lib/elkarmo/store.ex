@@ -23,7 +23,7 @@ defmodule Elkarmo.Store do
 
   def handle_cast({:set, new_karma}, _current_karma) do
     :dets.insert(@db_file, {:karma, new_karma})
-    :dets.sync(:karma)
+    :dets.sync(@db_file)
     {:noreply, new_karma}
   end
 
