@@ -14,7 +14,12 @@ defmodule Elkarmo.Formatter do
   defp do_to_message([]), do: []
   defp do_to_message([{user, karma}]), do: [score(user, karma)]
   defp do_to_message([head | tail]) do 
-    [score(head) <> " :+1:" | do_to_message_many(tail)]
+    {_next_user, next_karma} = hd tail
+    new_head = case head do
+      {_user, karma} when karma > next_karma -> score(head) <> " :+1:"
+      _ -> score(head)
+    end
+    [new_head | do_to_message_many(tail)]
   end
 
   defp do_to_message_many([{user, karma}]), do: [score(user, karma)]
