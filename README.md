@@ -16,7 +16,7 @@ This project uses the [Elixir-Slack](https://github.com/BlakeWilliams/Elixir-Sla
 
 * [Create a new bot user](https://my.slack.com/services/new/bot) for your Slack team.
 * Get the token for your newly created bot and paste it in the configuration `config/config.exs`:
-
-    config :elkarmo, slack_token: "YOUR _ SLACK _ TOKEN _ HERE"
-
+```elixir
+config :elkarmo, slack_token: "YOUR _ SLACK _ TOKEN _ HERE"
+```
 * You can run the app via `mix run --no-halt`, `iex -S mix` or create a redistributable package using [exrm](https://exrm.readme.io) (`mix release`).
