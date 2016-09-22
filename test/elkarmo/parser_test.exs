@@ -5,18 +5,18 @@ defmodule Elkarmo.ParserTest do
   @my_id "U1J28HCKC"
 
   test "info" do
-    assert Parser.parse("<@#{@my_id}>", @my_id) == {:info}
-    assert Parser.parse("<@#{@my_id}>:", @my_id) == {:info}
-    assert Parser.parse("<@#{@my_id}>: ", @my_id) == {:info}
-    assert Parser.parse("<@#{@my_id}> info", @my_id) == {:info}
-    assert Parser.parse("<@#{@my_id}>:info", @my_id) == {:info}
-    assert Parser.parse("<@#{@my_id}>: info", @my_id) == {:info}
+    assert Parser.parse("<@#{@my_id}>", @my_id) == :info
+    assert Parser.parse("<@#{@my_id}>:", @my_id) == :info
+    assert Parser.parse("<@#{@my_id}>: ", @my_id) == :info
+    assert Parser.parse("<@#{@my_id}> info", @my_id) == :info
+    assert Parser.parse("<@#{@my_id}>:info", @my_id) == :info
+    assert Parser.parse("<@#{@my_id}>: info", @my_id) == :info
   end
 
   test "reset" do
-    assert Parser.parse("<@#{@my_id}> reset", @my_id) == {:reset}
-    assert Parser.parse("<@#{@my_id}>:reset", @my_id) == {:reset}
-    assert Parser.parse("<@#{@my_id}>: reset", @my_id) == {:reset}
+    assert Parser.parse("<@#{@my_id}> reset", @my_id) == :reset
+    assert Parser.parse("<@#{@my_id}>:reset", @my_id) == :reset
+    assert Parser.parse("<@#{@my_id}>: reset", @my_id) == :reset
   end
 
   test "update" do
@@ -57,6 +57,11 @@ defmodule Elkarmo.ParserTest do
   test "higher values" do
     assert Parser.extract_karma("<@U174NDB8F>: +++++") == [{"U174NDB8F", 4}]
     assert Parser.extract_karma("<@U174NDB8F>: -----") == [{"U174NDB8F", -4}]
+  end
+
+  test "limit very high values to 5" do
+    assert Parser.extract_karma("<@U174NDB8F>: ++++++++++++++++++++++") == [{"U174NDB8F", 5}]
+    assert Parser.extract_karma("<@U174NDB8F>: ----------------------") == [{"U174NDB8F", -5}]
   end
 
   test "multiple occurrences" do
