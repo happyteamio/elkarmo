@@ -12,6 +12,8 @@ Karma points are stored using [DETS](http://erlang.org/doc/man/dets.html) in `ka
 
 This project uses the [Elixir-Slack](https://github.com/BlakeWilliams/Elixir-Slack) library to communicate with Slack.
 
+**There is a [blog-post](http://happyteam.io/blog/2016/10/03/how-to-build-karma-slack-bot-in-elixir/) which describes how this bot was built.**
+
 ## Installation
 
 * [Create a new bot user](https://my.slack.com/services/new/bot) for your Slack team.
