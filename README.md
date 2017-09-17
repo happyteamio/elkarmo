@@ -6,6 +6,7 @@ Slack karma bot written in Elixir. Allows to add (or remove) karma points to oth
 
 * Use `@mention` followed by ++ or -- (up to 5 +/-) to add/remove karma points to selected user.
 * Talk to the bot directly or use simple mention to display the current stats.
+* Say `version` to the bot to get the version number.
 * Use `@your_bot_name: reset` to reset karma stats.
 
 Karma points are stored using [DETS](http://erlang.org/doc/man/dets.html) in `karma_db` file.
