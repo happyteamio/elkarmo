@@ -1,16 +1,26 @@
 defmodule Elkarmo do
   use Application
-  
+
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
+    env = Application.get_env(:elkarmo, :env)
 
-    slack_token = Application.get_env(:elkarmo, :slack_token)
-
-    children = [
-      worker(Elkarmo.Store, [Elkarmo.Karma.empty]),
-      worker(Elkarmo.Slack, [slack_token])
-    ]
     opts = [strategy: :one_for_one, name: Elkarmo.Supervisor]
-    {:ok, _pid} = Supervisor.start_link children, opts
+    {:ok, _pid} = Supervisor.start_link(children(env), opts)
+  end
+
+  defp children(:test) do
+    [{Elkarmo.Store, Elkarmo.Karma.empty}]
+  end
+  defp children(_env) do
+    slack_token = Application.get_env(:elkarmo, :slack_token)
+    slack_spec = %{
+      id: Slack.Bot,
+      start: {Slack.Bot, :start_link, [Elkarmo.Slack, [], slack_token]}
+    }
+
+    [
+      {Elkarmo.Store, Elkarmo.Karma.empty},
+      slack_spec,
+    ]
   end
 end

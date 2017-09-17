@@ -3,6 +3,7 @@
 use Mix.Config
 
 config :elkarmo, slack_token: ""
+config :elkarmo, env: Mix.env
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

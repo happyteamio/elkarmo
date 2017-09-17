@@ -7,7 +7,7 @@ defmodule Elkarmo.KarmaTest do
   @user3 "U1J28HCKC"
 
   test "empty" do
-    assert empty == %{}
+    assert empty() == %{}
   end
 
   test "update empty list" do
@@ -16,7 +16,7 @@ defmodule Elkarmo.KarmaTest do
   end
 
   test "update to empty karma" do
-    initial_karma = empty
+    initial_karma = empty()
     to_apply = [{@user1, -5}, {@user3, 3}]
     assert update(initial_karma, to_apply) == %{@user3 => 3, @user1 => -5}
   end
