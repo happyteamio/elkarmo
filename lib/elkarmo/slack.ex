@@ -50,7 +50,7 @@ defmodule Elkarmo.Slack do
   end
 
   defp update_karma(%{channel: channel, user: user}, slack, changes) do
-    {cheats, valid_changes} = Enum.partition(changes, &is_cheater?(user, &1))
+    {cheats, valid_changes} = Enum.split_with(changes, &is_cheater?(user, &1))
     if cheats != [], do: send_message("<@#{user}>: :middle_finger:", channel, slack)
     current_karma = Elkarmo.Store.get()
     new_karma = Elkarmo.Karma.update(current_karma, valid_changes)

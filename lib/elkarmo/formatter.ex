@@ -2,7 +2,7 @@ defmodule Elkarmo.Formatter do
   def to_message(map) when map == %{}, do: "There's no karma yet"
 
   def to_message(map) do
-    {nil_karmas, karmas} = Map.to_list(map) |> Enum.partition(&has_nil_karma?/1)
+    {nil_karmas, karmas} = Map.to_list(map) |> Enum.split_with(&has_nil_karma?/1)
     karmas = Enum.sort(karmas, &compare_karmas/2)
     all_messages = do_to_message(karmas) ++ to_nil_message(nil_karmas)
     Enum.join(all_messages, "\n")
