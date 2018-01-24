@@ -5,16 +5,18 @@ defmodule Elkarmo.Store do
 
   def start_link(karma), do: GenServer.start_link(__MODULE__, karma, name: __MODULE__)
 
-  def get, do: GenServer.call __MODULE__, :get
+  def get, do: GenServer.call(__MODULE__, :get)
 
-  def set(new_karma), do: GenServer.cast __MODULE__, {:set, new_karma}
+  def set(new_karma), do: GenServer.cast(__MODULE__, {:set, new_karma})
 
   def init(initial_karma) do
-    {:ok, table} = :dets.open_file(@db_file, [type: :set])
-    karma = case :dets.lookup(table, :karma) do
-      [karma: found_karma] -> found_karma
-      [] -> initial_karma
-    end
+    {:ok, table} = :dets.open_file(@db_file, type: :set)
+
+    karma =
+      case :dets.lookup(table, :karma) do
+        [karma: found_karma] -> found_karma
+        [] -> initial_karma
+      end
 
     {:ok, karma}
   end

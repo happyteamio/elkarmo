@@ -6,8 +6,8 @@ defmodule Elkarmo.Mixfile do
       app: :elkarmo,
       version: "0.1.0",
       elixir: "~> 1.5",
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
@@ -34,7 +34,7 @@ defmodule Elkarmo.Mixfile do
   defp deps do
     [
       {:slack, "~> 0.12.0"},
-      {:distillery, "~> 1.5"},
+      {:distillery, "~> 1.5", runtime: false}
     ]
   end
 end

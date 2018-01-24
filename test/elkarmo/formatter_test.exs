@@ -23,28 +23,31 @@ defmodule Elkarmo.FormatterTest do
 
   test "mulitple users" do
     karma = %{@user1 => 0, @user3 => -100, @user2 => 90, @user4 => nil}
+
     assert to_message(karma) <> "\n" == """
-    <@#{@user2}>: 90 :+1:
-    <@#{@user1}>: 0
-    <@#{@user3}>: -100
-    <@#{@user4}> has no karma
-    """
+           <@#{@user2}>: 90 :+1:
+           <@#{@user1}>: 0
+           <@#{@user3}>: -100
+           <@#{@user4}> has no karma
+           """
   end
 
   test "don't append winner icon when there's a draw between only users" do
     karma = %{@user1 => 90, @user2 => 90}
+
     assert to_message(karma) <> "\n" == """
-    <@#{@user1}>: 90
-    <@#{@user2}>: 90
-    """
+           <@#{@user1}>: 90
+           <@#{@user2}>: 90
+           """
   end
 
   test "don't append winner icon when there's a draw" do
     karma = %{@user1 => 90, @user2 => 10, @user3 => 90}
+
     assert to_message(karma) <> "\n" == """
-    <@#{@user1}>: 90
-    <@#{@user3}>: 90
-    <@#{@user2}>: 10
-    """
+           <@#{@user1}>: 90
+           <@#{@user3}>: 90
+           <@#{@user2}>: 10
+           """
   end
 end

@@ -9,18 +9,20 @@ defmodule Elkarmo do
   end
 
   defp children(:test) do
-    [{Elkarmo.Store, Elkarmo.Karma.empty}]
+    [{Elkarmo.Store, Elkarmo.Karma.empty()}]
   end
+
   defp children(_env) do
     slack_token = Application.get_env(:elkarmo, :slack_token)
+
     slack_spec = %{
       id: Slack.Bot,
       start: {Slack.Bot, :start_link, [Elkarmo.Slack, [], slack_token]}
     }
 
     [
-      {Elkarmo.Store, Elkarmo.Karma.empty},
-      slack_spec,
+      {Elkarmo.Store, Elkarmo.Karma.empty()},
+      slack_spec
     ]
   end
 end

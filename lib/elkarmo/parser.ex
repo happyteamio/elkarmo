@@ -3,9 +3,13 @@ defmodule Elkarmo.Parser do
 
   def parse(message, my_id) do
     cond do
-      message =~ ~r/^\s*<@#{my_id}>:?\s*(?:info)?\s*$/ -> :info
-      message =~ ~r/^\s*<@#{my_id}>(?::?\s*|\s+)reset\s*$/ -> :reset
-      true -> 
+      message =~ ~r/^\s*<@#{my_id}>:?\s*(?:info)?\s*$/ ->
+        :info
+
+      message =~ ~r/^\s*<@#{my_id}>(?::?\s*|\s+)reset\s*$/ ->
+        :reset
+
+      true ->
         case extract_karma(message) do
           [] -> nil
           karma -> {:update, karma}
@@ -14,10 +18,9 @@ defmodule Elkarmo.Parser do
   end
 
   def extract_karma(message) do
-    for [_match, user, karma] <- Regex.scan(@karma_regex, message),
-      do: {user, karma_value(karma)}
+    for [_match, user, karma] <- Regex.scan(@karma_regex, message), do: {user, karma_value(karma)}
   end
 
-  defp karma_value("+" <> pluses), do: String.length pluses
-  defp karma_value("-" <> minuses), do: -(String.length minuses)
+  defp karma_value("+" <> pluses), do: String.length(pluses)
+  defp karma_value("-" <> minuses), do: -String.length(minuses)
 end

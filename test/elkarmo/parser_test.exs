@@ -1,7 +1,7 @@
 defmodule Elkarmo.ParserTest do
   use ExUnit.Case, async: true
   alias Elkarmo.Parser, as: Parser
-  
+
   @my_id "U1J28HCKC"
 
   test "info" do
@@ -33,7 +33,7 @@ defmodule Elkarmo.ParserTest do
     assert Parser.parse("<@#{@my_id}>: <@U174NDB8F>: +", @my_id) == nil
     assert Parser.parse("<@U174NDB8F>: +", @my_id) == nil
   end
-  
+
   test "message with no karma" do
     assert Parser.extract_karma("") == []
     assert Parser.extract_karma("<@U07A2APBP>: hey") == []
@@ -65,6 +65,9 @@ defmodule Elkarmo.ParserTest do
   end
 
   test "multiple occurrences" do
-    assert Parser.extract_karma("I'll give <@U174NDB8F>: +++++ and for <@U07A2APBP>---") == [{"U174NDB8F", 4}, {"U07A2APBP", -2}]
+    assert Parser.extract_karma("I'll give <@U174NDB8F>: +++++ and for <@U07A2APBP>---") == [
+             {"U174NDB8F", 4},
+             {"U07A2APBP", -2}
+           ]
   end
 end
