@@ -1,8 +1,6 @@
 defmodule Elkarmo.Store do
   use GenServer
 
-  @db_file :karma_db
-
   def start_link(karma), do: GenServer.start_link(__MODULE__, karma, name: __MODULE__)
 
   def get, do: GenServer.call(__MODULE__, :get)
@@ -10,7 +8,9 @@ defmodule Elkarmo.Store do
   def set(new_karma), do: GenServer.cast(__MODULE__, {:set, new_karma})
 
   def init(initial_karma) do
-    {:ok, table} = :dets.open_file(@db_file, type: :set)
+    db_file = ensure_file()
+
+    {:ok, table} = :dets.open_file(db_file, type: :set)
 
     karma =
       case :dets.lookup(table, :karma) do
@@ -18,18 +18,29 @@ defmodule Elkarmo.Store do
         [] -> initial_karma
       end
 
-    {:ok, karma}
+    {:ok, {db_file, karma}}
   end
 
-  def handle_call(:get, _from, state), do: {:reply, state, state}
+  defp ensure_file() do
+    cwd = File.cwd!()
+    path = Path.join(cwd, "data")
 
-  def handle_cast({:set, new_karma}, _current_karma) do
-    :dets.insert(@db_file, {:karma, new_karma})
-    :dets.sync(@db_file)
-    {:noreply, new_karma}
+    if !File.dir?(path) do
+      File.mkdir!(path)
+    end
+
+    Path.join(path, "karma_db")
   end
 
-  def terminate(_reason, _state) do
-    :dets.close(@db_file)
+  def handle_call(:get, _from, state = {_db_file, karma}), do: {:reply, karma, state}
+
+  def handle_cast({:set, new_karma}, {db_file, _current_karma}) do
+    :dets.insert(db_file, {:karma, new_karma})
+    :dets.sync(db_file)
+    {:noreply, {db_file, new_karma}}
+  end
+
+  def terminate(_reason, state = {db_file, _karma}) do
+    :dets.close(db_file)
   end
 end
