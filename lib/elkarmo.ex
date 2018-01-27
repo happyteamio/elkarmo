@@ -13,7 +13,8 @@ defmodule Elkarmo do
   end
 
   defp children(_env) do
-    slack_token = Application.get_env(:elkarmo, :slack_token)
+    slack_token =
+      System.get_env("ELKARMO_SLACK_TOKEN") || Application.get_env(:elkarmo, :slack_token)
 
     slack_spec = %{
       id: Slack.Bot,
