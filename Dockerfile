@@ -1,4 +1,4 @@
-FROM elixir:1.6 as builder
+FROM elixir:1.6-slim as builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
@@ -30,11 +30,11 @@ COPY . .
 
 RUN mix release --env=prod --verbose --no-tar
 
-FROM debian:jessie
+FROM debian:9.4
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
-    libssl1.0.0 \
+    libssl1.1 \
     && export LANG=en_US.UTF-8 \
     && echo $LANG UTF-8 > /etc/locale.gen \
     && locale-gen \
