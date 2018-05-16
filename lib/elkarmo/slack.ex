@@ -56,11 +56,15 @@ defmodule Elkarmo.Slack do
   end
 
   defp handle_public_message(context) do
-    case Elkarmo.Parser.parse(context.text, context.slack.me.id) do
-      :info -> show_karma(context)
-      :reset -> reset_karma(context)
-      {:update, changes} -> update_karma(context, changes)
-      _ -> :ok
+    if is_bot?(context) do
+      show_bot_msg(context)
+    else
+      case Elkarmo.Parser.parse(context.text, context.slack.me.id) do
+        :info -> show_karma(context)
+        :reset -> reset_karma(context)
+        {:update, changes} -> update_karma(context, changes)
+        _ -> :ok
+      end
     end
   end
 
@@ -72,12 +76,21 @@ defmodule Elkarmo.Slack do
     end
   end
 
+  defp is_bot?(%Context{slack: slack, user: id}) do
+    get_in(slack.users, [id, :is_bot]) == true
+  end
+
   defp is_direct_message?(%Context{channel: channel, slack: slack}),
     do: Map.has_key?(slack.ims, channel)
 
   defp show_version(ctx) do
     {:ok, version} = :application.get_key(:elkarmo, :vsn)
     send_message(to_string(version), ctx)
+  end
+
+  defp show_bot_msg(ctx = %Context{user: user}) do
+    msg = "<@#{user}>: I don't think so :troll:"
+    send_message(msg, ctx)
   end
 
   defp show_karma(ctx) do
