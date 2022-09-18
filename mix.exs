@@ -4,7 +4,7 @@ defmodule Elkarmo.Mixfile do
   def project do
     [
       app: :elkarmo,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.7",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -34,6 +34,7 @@ defmodule Elkarmo.Mixfile do
   defp deps do
     [
       {:slack, git: "https://github.com/BlakeWilliams/Elixir-Slack.git", tag: "v0.23.6"},
+      {:poison, "~> 3.1"},
       {:distillery, "~> 1.5", runtime: false}
     ]
   end

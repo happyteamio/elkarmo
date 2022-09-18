@@ -90,7 +90,7 @@ defmodule Elkarmo.Slack do
     end
   end
 
-  defp is_bot?(%Context{slack: slack, user: id, bots: bots}) do
+  defp is_bot?(%Context{user: id, bots: bots}) do
     Enum.member?(bots, id)
   end
 
@@ -129,6 +129,7 @@ defmodule Elkarmo.Slack do
     changed_karmas = Elkarmo.Karma.get(new_karma, changed_users)
 
     msg = Elkarmo.Formatter.to_message(changed_karmas)
+
     send_message(msg, ctx)
   end
 
