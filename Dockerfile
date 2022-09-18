@@ -1,4 +1,4 @@
-FROM elixir:1.7-slim as builder
+FROM elixir:1.7 as builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
@@ -30,7 +30,7 @@ COPY . .
 
 RUN mix release --env=prod --verbose --no-tar
 
-FROM debian:9.4
+FROM debian:buster-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
