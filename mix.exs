@@ -4,8 +4,8 @@ defmodule Elkarmo.Mixfile do
   def project do
     [
       app: :elkarmo,
-      version: "0.1.5",
-      elixir: "~> 1.6",
+      version: "0.2.0",
+      elixir: "~> 1.7",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -17,7 +17,7 @@ defmodule Elkarmo.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      extra_applications: [:logger, :poison],
+      extra_applications: [:logger],
       mod: {Elkarmo, []}
     ]
   end
@@ -33,7 +33,7 @@ defmodule Elkarmo.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:slack, "~> 0.12.0"},
+      {:slack, git: "https://github.com/BlakeWilliams/Elixir-Slack.git", tag: "v0.23.6"},
       {:distillery, "~> 1.5", runtime: false}
     ]
   end

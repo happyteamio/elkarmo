@@ -2,12 +2,24 @@ defmodule Elkarmo.Slack do
   use Slack
 
   defmodule Context do
-    defstruct [:text, :user, :channel, :slack, :thread_id]
+    defstruct [:text, :user, :channel, :slack, :thread_id, :ims, :bots]
   end
 
   def handle_connect(slack, state) do
     IO.puts("Connected as #{slack.me.name}")
-    {:ok, state}
+
+    token =
+      System.get_env("ELKARMO_SLACK_TOKEN") || Application.get_env(:elkarmo, :slack_token)
+
+    ims_ids = Slack.Web.Conversations.list(%{token: token, types: "im"})
+      |> Map.get("channels") 
+      |> Enum.map(&Map.get(&1,"id"))
+
+    bots = Slack.Web.Users.list(%{token: token}) 
+     |> Map.get("members") 
+     |> Enum.flat_map(fn x -> if x["is_bot"], do: [x["id"]], else: [] end)
+
+    {:ok, state ++ [ims: ims_ids, bots: bots]}
   end
 
   def handle_event(_message = %{type: "message", reply_to: _}, _slack, state), do: {:ok, state}
@@ -36,7 +48,9 @@ defmodule Elkarmo.Slack do
         user: user,
         channel: message.channel,
         slack: slack,
-        thread_id: message[:thread_ts]
+        thread_id: message[:thread_ts],
+        ims: state[:ims],
+        bots: state[:bots]
       }
 
       handle_message(ctx)
@@ -76,12 +90,13 @@ defmodule Elkarmo.Slack do
     end
   end
 
-  defp is_bot?(%Context{slack: slack, user: id}) do
-    get_in(slack.users, [id, :is_bot]) == true
+  defp is_bot?(%Context{slack: slack, user: id, bots: bots}) do
+    Enum.member?(bots, id)
   end
 
-  defp is_direct_message?(%Context{channel: channel, slack: slack}),
-    do: Map.has_key?(slack.ims, channel)
+  defp is_direct_message?(%Context{channel: channel, ims: ims}) do
+    Enum.member?(ims, channel)
+  end
 
   defp show_version(ctx) do
     {:ok, version} = :application.get_key(:elkarmo, :vsn)

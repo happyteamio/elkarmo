@@ -8,7 +8,7 @@ defmodule Elkarmo.Store do
   def set(new_karma), do: GenServer.cast(__MODULE__, {:set, new_karma})
 
   def init(initial_karma) do
-    db_file = ensure_file()
+    db_file = ensure_file() |> to_charlist
 
     {:ok, table} = :dets.open_file(db_file, type: :set)
 
