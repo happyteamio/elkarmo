@@ -1,5 +1,5 @@
 defmodule Elkarmo.Parser do
-  @karma_regex ~R/<@(\w+)>:?\s*(-{2,6}|\+{2,6})/
+  @karma_regex ~r/<@(\w+)>:?\s*(-{2,6}|\+{2,6})/
 
   def parse(message, my_id) do
     cond do

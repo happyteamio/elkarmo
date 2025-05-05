@@ -1,126 +1,83 @@
 defmodule Elkarmo.Slack do
-  use Slack
+  use Slack.Bot
+
+  require Logger
 
   defmodule Context do
-    defstruct [:text, :user, :channel, :slack, :thread_id, :ims, :bots]
+    defstruct [:text, :channel, :channel_type, :user, :my_user_id, :thread_ts]
   end
 
-  def handle_connect(slack, state) do
-    IO.puts("Connected as #{slack.me.name}")
-
-    token =
-      System.get_env("ELKARMO_SLACK_TOKEN") || Application.get_env(:elkarmo, :slack_token)
-
-    ims_ids = Slack.Web.Conversations.list(%{token: token, types: "im"})
-      |> Map.get("channels") 
-      |> Enum.map(&Map.get(&1,"id"))
-
-    bots = Slack.Web.Users.list(%{token: token}) 
-     |> Map.get("members") 
-     |> Enum.flat_map(fn x -> if x["is_bot"], do: [x["id"]], else: [] end)
-
-    {:ok, state ++ [ims: ims_ids, bots: bots]}
+  @impl true
+  def handle_event(
+        "message",
+        message = %{
+          "text" => text,
+          "channel" => channel,
+          "channel_type" => channel_type,
+          "user" => user
+        },
+        %Slack.Bot{user_id: my_user_id}
+      ) do
+    # TODO: handle file shares and comments
+    handle_message(%Context{
+      text: text,
+      channel: channel,
+      channel_type: channel_type,
+      user: user,
+      my_user_id: my_user_id,
+      thread_ts: message["thread_ts"]
+    })
   end
 
-  def handle_event(_message = %{type: "message", reply_to: _}, _slack, state), do: {:ok, state}
-
-  def handle_event(message = %{type: "message"}, slack, state) do
-    text_user =
-      case message do
-        %{subtype: "file_comment", comment: comment} ->
-          {comment[:comment], comment[:user]}
-
-        %{subtype: "file_share", file: %{initial_comment: comment}} ->
-          {comment[:comment], comment[:user]}
-
-        %{subtype: _subtype} ->
-          nil
-
-        _msg ->
-          {message.text, message.user}
-      end
-
-    if text_user != nil do
-      {text, user} = text_user
-
-      ctx = %Context{
-        text: text,
-        user: user,
-        channel: message.channel,
-        slack: slack,
-        thread_id: message[:thread_ts],
-        ims: state[:ims],
-        bots: state[:bots]
-      }
-
-      handle_message(ctx)
-    end
-
-    {:ok, state}
+  def handle_event(_type, _payload, _bot) do
+    :ok
   end
 
-  def handle_event(_message, _slack, state), do: {:ok, state}
+  # handle message by channel_type
+  def handle_message(payload = %Context{channel_type: "im"}) do
+    handle_direct_message(payload)
+    :ok
+  end
 
-  defp handle_message(context) do
-    if is_direct_message?(context) do
-      handle_direct_message(context)
+  def handle_message(payload = %Context{channel_type: "channel"}) do
+    handle_public_message(payload)
+    :ok
+  end
+
+  defp handle_public_message(ctx) do
+    if is_bot?(ctx) do
+      show_bot_msg(ctx)
     else
-      handle_public_message(context)
-    end
-  end
-
-  defp handle_public_message(context) do
-    if is_bot?(context) do
-      show_bot_msg(context)
-    else
-      case Elkarmo.Parser.parse(context.text, context.slack.me.id) do
-        :info -> show_karma(context)
-        :reset -> reset_karma(context)
-        {:update, changes} -> update_karma(context, changes)
+      case Elkarmo.Parser.parse(ctx.text, ctx.my_user_id) do
+        :info -> show_karma(ctx)
+        :reset -> reset_karma(ctx)
+        {:update, changes} -> update_karma(ctx, changes)
         _ -> :ok
       end
     end
   end
 
-  defp handle_direct_message(context) do
-    if context.text == "version" do
-      show_version(context)
+  defp handle_direct_message(ctx) do
+    if ctx.text == "version" do
+      show_version(ctx)
     else
-      show_karma(context)
+      show_karma(ctx)
     end
-  end
-
-  defp is_bot?(%Context{user: id, bots: bots}) do
-    Enum.member?(bots, id)
-  end
-
-  defp is_direct_message?(%Context{channel: channel, ims: ims}) do
-    Enum.member?(ims, channel)
   end
 
   defp show_version(ctx) do
     {:ok, version} = :application.get_key(:elkarmo, :vsn)
-    send_message(to_string(version), ctx)
-  end
-
-  defp show_bot_msg(ctx = %Context{user: user}) do
-    msg = "<@#{user}>: I don't think so :troll:"
-    send_message(msg, ctx)
+    send_msg(ctx, to_string(version))
   end
 
   defp show_karma(ctx) do
     msg = Elkarmo.Store.get() |> Elkarmo.Formatter.to_message()
-    send_message(msg, ctx)
-  end
-
-  defp reset_karma(ctx) do
-    Elkarmo.Store.set(Elkarmo.Karma.empty())
-    send_message("Karma is gone :runner::dash:", ctx)
+    send_msg(ctx, msg)
   end
 
   defp update_karma(ctx = %Context{user: user}, changes) do
     {cheats, valid_changes} = Enum.split_with(changes, &is_cheater?(user, &1))
-    if cheats != [], do: send_message("<@#{user}>: :middle_finger:", ctx)
+    if cheats != [], do: send_msg(ctx, "<@#{user}>: :middle_finger:")
     current_karma = Elkarmo.Store.get()
     new_karma = Elkarmo.Karma.update(current_karma, valid_changes)
     Elkarmo.Store.set(new_karma)
@@ -130,18 +87,31 @@ defmodule Elkarmo.Slack do
 
     msg = Elkarmo.Formatter.to_message(changed_karmas)
 
-    send_message(msg, ctx)
+    send_msg(ctx, msg)
+  end
+
+  defp reset_karma(ctx) do
+    Elkarmo.Store.set(Elkarmo.Karma.empty())
+    send_msg(ctx, "Karma is gone :runner::dash:")
   end
 
   defp is_cheater?(sending_user, {user, karma}), do: sending_user == user and karma > 0
 
-  defp send_message(msg, %Context{channel: channel, slack: slack, thread_id: thread_id}) do
-    if thread_id == nil do
-      send_message(msg, channel, slack)
+  defp is_bot?(%Context{user: _id}) do
+    # TODO
+    false
+  end
+
+  defp show_bot_msg(ctx = %Context{user: user}) do
+    msg = "<@#{user}>: I don't think so :troll:"
+    send_msg(ctx, msg)
+  end
+
+  defp send_msg(%Context{channel: channel, thread_ts: thread_ts}, message) do
+    if thread_ts == nil do
+      send_message(channel, message)
     else
-      %{type: "message", text: msg, channel: channel, thread_ts: thread_id, reply_broadcast: true}
-      |> Poison.encode!()
-      |> send_raw(slack)
+      send_message(channel, %{text: message, thread_ts: thread_ts, reply_broadcast: true})
     end
   end
 end

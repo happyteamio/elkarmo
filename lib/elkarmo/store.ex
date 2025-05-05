@@ -40,7 +40,7 @@ defmodule Elkarmo.Store do
     {:noreply, {db_file, new_karma}}
   end
 
-  def terminate(_reason, state = {db_file, _karma}) do
+  def terminate(_reason, _state = {db_file, _karma}) do
     :dets.close(db_file)
   end
 end
